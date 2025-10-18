@@ -1,0 +1,39 @@
+name: Build Android APK
+on:
+  push:
+    branches:
+      - main # 'main' ब्रांच पर पुश होने पर वर्कफ़्लो चलाएँ।
+  workflow_dispatch: # GitHub UI से मैन्युअल रूप से चलाने की अनुमति देता है।
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # यह जॉब उबंटू के लेटेस्ट वर्शन पर चलेगी।
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies for Buildozer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev zlib1g-dev
+          pip3 install --user --upgrade buildozer
+
+      - name: Set PATH for Buildozer
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Run Buildozer # APK बनाने के लिए Buildozer चलाएँ।
+        run: |
+          buildozer android debug
+        
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: bin/*.apk
+          
