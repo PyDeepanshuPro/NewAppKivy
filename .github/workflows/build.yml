@@ -16,14 +16,21 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.14.0
 
       - name: Install dependencies for Buildozer
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev zlib1g-dev
           pip3 install --user --upgrade buildozer
-
+      - name: Install Cython dependencies
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y build-essential python3-dev
+      - name: Install Cython
+        run: |
+         pip3 install Cython
+    
       - name: Set PATH for Buildozer
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
           
