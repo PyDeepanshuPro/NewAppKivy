@@ -1,46 +1,43 @@
-name: Build Android APK
+name: Build APK (Buildozer)
+
 on:
   push:
-    branches:
-      - main # 'main' ब्रांच पर पुश होने पर वर्कफ़्लो चलाएँ।
-  workflow_dispatch: # GitHub UI से मैन्युअल रूप से चलाने की अनुमति देता है।
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # यह जॉब उबंटू के लेटेस्ट वर्शन पर चलेगी।
-
+  build-apk:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
-      - name: Install dependencies for Buildozer
+      - name: Install apt deps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev zlib1g-dev
-          pip3 install --user --upgrade buildozer
-      - name: Install Cython dependencies
+          sudo apt update
+          sudo apt install -y git openjdk-11-jdk zip unzip zlib1g-dev \
+            libncurses5 libtinfo5 build-essential libffi-dev libssl-dev
+
+      - name: Install pip packages
         run: |
-         sudo apt-get update
-         sudo apt-get install -y build-essential python3-dev
-      - name: Install Cython
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install buildozer==1.7.0 virtualenv
+
+      - name: Create build environment & run Buildozer
         run: |
-         pip3 install Cython
-    
-      - name: Set PATH for Buildozer
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-          
-      - name: Run Buildozer # APK बनाने के लिए Buildozer चलाएँ।
-        run: |
-          buildozer android debug
-        
-      - name: Upload APK as artifact
+          # optional: show buildozer version
+          buildozer --version || true
+          # initialise (if needed) and build debug apk
+          # Assumes buildozer.spec already present and main.py at repo root
+          buildozer -v android debug
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: apk-files
           path: bin/*.apk
-          
