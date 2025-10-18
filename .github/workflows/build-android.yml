@@ -21,7 +21,6 @@ jobs:
 
     - name: Build APK with full log
       run: |
-          buildozer init || true
           buildozer -v android debug log_level=2
 
     - name: Upload build logs
